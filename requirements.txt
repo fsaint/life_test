@@ -1,0 +1,12 @@
+anthropic>=0.40.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+mempalace>=2.0.0      # MemPalace adapter (ChromaDB + semantic search)
+
+# Optional: local embeddings for the exact_or_semantic scoring strategy
+# Falls back to word-overlap ratio if not installed
+# sentence-transformers>=2.7.0
+
+# Optional: additional memory system adapters
+# openai>=1.0.0
+# mem0ai>=0.1.0

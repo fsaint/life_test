@@ -1,0 +1,12 @@
+event_id: sms_001
+event_type: sms
+timestamp: "2026-03-05T18:30:00-06:00"
+
+payload:
+  thread:
+    - from: "Green Hills Animal Clinic (+1-512-555-0388)"
+      to: "Alex"
+      body: "Reminder: Miso is due for her annual vaccines and wellness exam. Please call (512) 555-0388 to schedule. We recommend scheduling before April 30."
+    - from: "Alex"
+      to: "Green Hills Animal Clinic"
+      body: "Thanks, I'll call tomorrow morning to set something up."

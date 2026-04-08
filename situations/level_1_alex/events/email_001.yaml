@@ -1,0 +1,19 @@
+event_id: email_001
+event_type: email
+timestamp: "2026-03-02T09:15:00-06:00"
+
+payload:
+  from: "sarah.kim@gridline.io"
+  to: "alex.rivera@gridline.io"
+  subject: "Promotion – effective March 15"
+  body: |
+    Hi Alex,
+
+    I'm thrilled to let you know that your promotion to **Senior Software Engineer**
+    has been approved, effective March 15th. Your new annual salary will be $128,000.
+
+    Please stop by HR by Friday to sign the updated offer letter.
+
+    Congrats — you've earned it.
+
+    Sarah

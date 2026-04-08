@@ -1,0 +1,9 @@
+event_id: instruction_001
+event_type: user_instruction
+timestamp: "2026-03-06T10:00:00-06:00"
+
+payload:
+  instruction: >
+    I just scheduled Miso's vet appointment. It's April 8th at 10:30am at Green Hills
+    Animal Clinic. Please remember this and remind me the day before.
+  category: "appointment"

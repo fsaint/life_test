@@ -1,0 +1,11 @@
+event_id: instruction_002
+event_type: user_instruction
+timestamp: "2026-03-11T08:45:00-06:00"
+
+payload:
+  instruction: >
+    I've decided I'm NOT renewing the lease on my apartment. I'm going to move in with
+    my girlfriend Priya starting July 1st. Her address is 88 South Lamar Blvd, Apt 3A,
+    Austin TX 78704. I need to tell Austin Leasing I'm not renewing and I need to update
+    my address everywhere. Remind me to give notice before April 15.
+  category: "life_change"

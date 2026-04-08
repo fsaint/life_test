@@ -1,0 +1,184 @@
+schema_version: "1.0"
+situation_id: "level_1_alex"
+description: "Single adult. Tests basic recall, updates, preference tracking, and cross-event synthesis."
+total_possible_points: 95
+
+phases:
+
+  # ── Phase 1: baseline knowledge from initial_state ──────────────────────────
+  - phase_id: "p1_baseline_questions"
+    type: question_section
+    label: "Baseline recall from initial state (before any events)"
+    questions:
+
+      - question_id: "q1_01"
+        text: "What is Alex's job title and employer?"
+        expected_answer: "Software Engineer at Gridline Technologies"
+        difficulty: 1
+        points: 5
+        scoring:
+          type: exact_or_semantic
+          threshold: 0.85
+
+      - question_id: "q1_02"
+        text: "What is Alex's cat's name and what breed or color is the cat?"
+        expected_answer: "Miso, an orange tabby"
+        difficulty: 1
+        points: 5
+        scoring:
+          type: exact_or_semantic
+          threshold: 0.80
+
+      - question_id: "q1_03"
+        text: "Alex has a drug allergy. What is it and what is the reaction?"
+        expected_answer: "Penicillin allergy, causes a rash"
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Identifies penicillin as the allergen"
+              points: 5
+            - criterion: "Mentions rash as the reaction"
+              points: 3
+
+      - question_id: "q1_04"
+        text: "What time preference does Alex have for scheduling?"
+        expected_answer: "Alex prefers not to schedule anything before 9am"
+        difficulty: 2
+        points: 7
+        scoring:
+          type: exact_or_semantic
+          threshold: 0.80
+
+  # ── Phase 2: career + pet events ────────────────────────────────────────────
+  - phase_id: "p2_events"
+    type: event_section
+    label: "Promotion email, vet reminder SMS, vet appointment instruction"
+    events:
+      - ref: "events/email_001.yaml"
+      - ref: "events/sms_001.yaml"
+      - ref: "events/instruction_001.yaml"
+
+  - phase_id: "p2_questions"
+    type: question_section
+    label: "Recall updates from phase 2 events"
+    questions:
+
+      - question_id: "q2_01"
+        text: "What is Alex's current job title and salary?"
+        expected_answer: "Senior Software Engineer, $128,000/year"
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Senior Software Engineer as title"
+              points: 4
+            - criterion: "States salary is $128,000"
+              points: 4
+
+      - question_id: "q2_02"
+        text: "When is Miso's vet appointment and where?"
+        expected_answer: "April 8th at 10:30am at Green Hills Animal Clinic"
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Correct date: April 8th"
+              points: 3
+            - criterion: "Correct time: 10:30am"
+              points: 3
+            - criterion: "Correct location: Green Hills Animal Clinic"
+              points: 2
+
+      - question_id: "q2_03"
+        text: "What was Alex's salary before the promotion?"
+        expected_answer: "The initial state does not mention a salary figure before the promotion"
+        difficulty: 3
+        points: 7
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Correctly states the pre-promotion salary was not mentioned or is unknown"
+              points: 7
+
+  # ── Phase 3: lease + move events ────────────────────────────────────────────
+  - phase_id: "p3_events"
+    type: event_section
+    label: "Lease renewal notice, move-in instruction, HR portal screenshot"
+    events:
+      - ref: "events/email_002.yaml"
+      - ref: "events/instruction_002.yaml"
+      - ref: "events/screenshot_001.yaml"
+
+  - phase_id: "p3_questions"
+    type: question_section
+    label: "Cross-event synthesis and updated facts"
+    questions:
+
+      - question_id: "q3_01"
+        text: "What is Alex's current home address and what will it be after July 1st?"
+        expected_answer: "Currently 2204 Barton Springs Rd, Apt 14B, Austin TX 78704. After July 1st: 88 South Lamar Blvd, Apt 3A, Austin TX 78704 (moving in with girlfriend Priya)."
+        difficulty: 3
+        points: 12
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States current address (Barton Springs Rd, Apt 14B)"
+              points: 4
+            - criterion: "States new address (South Lamar Blvd, Apt 3A)"
+              points: 4
+            - criterion: "Mentions July 1st as the move date"
+              points: 2
+            - criterion: "Mentions moving in with girlfriend Priya"
+              points: 2
+
+      - question_id: "q3_02"
+        text: "Is Alex renewing the lease on the current apartment? What is the deadline for the decision?"
+        expected_answer: "No, Alex decided not to renew. The deadline to notify Austin Leasing is April 15, 2026."
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Alex is NOT renewing"
+              points: 4
+            - criterion: "States the deadline is April 15"
+              points: 4
+
+      - question_id: "q3_03"
+        text: "What is Alex's semi-monthly paycheck amount after the promotion?"
+        expected_answer: "$5,333.33"
+        difficulty: 3
+        points: 8
+        scoring:
+          type: exact_or_semantic
+          threshold: 0.95
+
+      - question_id: "q3_04"
+        text: "Summarize all time-sensitive action items Alex currently has open."
+        expected_answer: "1) Notify Austin Leasing of non-renewal by April 15. 2) Miso vet appointment April 8 at 10:30am. 3) Update address everywhere before July 1 move."
+        difficulty: 4
+        points: 15
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Mentions notifying Austin Leasing by April 15"
+              points: 5
+            - criterion: "Mentions Miso's vet appointment on April 8"
+              points: 4
+            - criterion: "Mentions address update task"
+              points: 3
+            - criterion: "Correctly attributes deadline of April 15 to the lease notice"
+              points: 3
+
+      - question_id: "q3_05"
+        text: "If someone asks Alex to have a call at 8:30am, what should the response be?"
+        expected_answer: "Alex prefers not to schedule anything before 9am, so 8:30am is unavailable."
+        difficulty: 2
+        points: 4
+        scoring:
+          type: exact_or_semantic
+          threshold: 0.80

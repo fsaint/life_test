@@ -1,0 +1,21 @@
+event_id: email_001
+event_type: email
+timestamp: "2026-03-06T09:05:00-06:00"
+
+payload:
+  from: "ray.kowalski@marshplumbing.com"
+  to: "daniel.marsh@marshplumbing.com"
+  subject: "Q2 inventory — need decision by Friday"
+  body: |
+    Dan,
+
+    Our copper fitting supplier (Hendricks Industrial) raised prices 8% starting April 1.
+    If we pre-order Q2 inventory before March 31 we lock in current pricing — estimated
+    savings of ~$14,000.
+
+    I've already talked to Janet and we have the cash flow to cover it. Needs your sign-off
+    since it's over the $10k threshold in our operating agreement.
+
+    Let me know by Friday (March 8) so Janet can place the order.
+
+    — Ray

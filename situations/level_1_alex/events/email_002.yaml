@@ -1,0 +1,21 @@
+event_id: email_002
+event_type: email
+timestamp: "2026-03-10T14:22:00-06:00"
+
+payload:
+  from: "noreply@austinleasing.com"
+  to: "alex.r.1994@gmail.com"
+  subject: "Lease Renewal Notice – Unit 14B"
+  body: |
+    Dear Alex Rivera,
+
+    Your current lease at 2204 Barton Springs Rd, Apt 14B expires June 30, 2026.
+
+    We are pleased to offer a renewal at $1,975/month (up from $1,850), for a
+    12-month term beginning July 1, 2026. Please respond by April 15, 2026
+    to confirm or decline.
+
+    To accept, log in to your tenant portal at austinleasing.com/portal.
+
+    Austin Leasing Group
+    (512) 555-0660

@@ -1,0 +1,135 @@
+schema_version: "1.0"
+
+# Cost notes:
+#   - Scoring uses exact/semantic match first; LLM judge only for rubric questions
+#   - Judge model defaults to claude-haiku-4-5 (cheapest) unless overridden
+#   - context_window_only adapter has no memory overhead — pure context stuffing baseline
+
+judge:
+  # Shared judge config used by RubricScorer across all systems
+  provider: anthropic
+  model: claude-haiku-4-5-20251001
+  temperature: 0.0
+  max_tokens: 10  # Judge answers YES/NO only
+
+systems:
+
+  # Baseline: no memory system — everything must fit in context window
+  - system_id: claude_sonnet_baseline
+    label: "Claude Sonnet 4.6 — context window only (no memory)"
+    adapter: claude_local
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: context_window_only
+      config: {}
+    notes: >
+      All events are accumulated in a running context. Will degrade on long
+      event streams when context fills. Good lower-bound baseline.
+
+  # Haiku baseline: cheaper model, same no-memory approach
+  - system_id: claude_haiku_baseline
+    label: "Claude Haiku 4.5 — context window only (no memory)"
+    adapter: claude_local
+    llm:
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: context_window_only
+      config: {}
+    notes: >
+      Low-cost baseline. Tests whether cheaper models perform adequately
+      on PA tasks with full context.
+
+  # Claude + MemPalace (local ChromaDB, verbatim raw storage)
+  - system_id: claude_sonnet_mempalace
+    label: "Claude Sonnet 4.6 + MemPalace"
+    adapter: claude_mempalace
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: mempalace
+      config:
+        palace_path: null   # null = auto temp dir, isolated per run
+    notes: >
+      MemPalace stores events verbatim in ChromaDB (no LLM extraction).
+      Retrieval is semantic search over raw chunks. Zero ingest tokens.
+      Claimed 96.6% on LongMemEval in raw mode.
+
+  - system_id: claude_haiku_mempalace
+    label: "Claude Haiku 4.5 + MemPalace"
+    adapter: claude_mempalace
+    llm:
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: mempalace
+      config:
+        palace_path: null
+    notes: >
+      Haiku + MemPalace — tests whether the memory system compensates
+      for a weaker LLM. Lower cost than Sonnet variant.
+
+  # Claude + Mem0 (managed memory SaaS)
+  - system_id: claude_sonnet_mem0
+    label: "Claude Sonnet 4.6 + Mem0"
+    adapter: claude_mem0
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: mem0
+      config:
+        api_key_env: MEM0_API_KEY
+        user_id: "life_test_{situation_id}"  # isolated per situation
+    notes: >
+      Mem0 extracts and stores facts from events. Query-time retrieval
+      augments the LLM prompt. Tests managed extraction + retrieval.
+
+  # Claude + Zep (open-source temporal memory)
+  - system_id: claude_sonnet_zep
+    label: "Claude Sonnet 4.6 + Zep"
+    adapter: claude_zep
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: zep
+      config:
+        api_key_env: ZEP_API_KEY
+        session_id: "life_test_{situation_id}"
+    notes: >
+      Zep provides temporal knowledge graph memory. Good at tracking
+      entity relationships over time.
+
+  # OpenAI GPT-4o + Mem0 (cross-vendor comparison)
+  - system_id: gpt4o_mem0
+    label: "GPT-4o + Mem0"
+    adapter: openai_mem0
+    llm:
+      provider: openai
+      model: gpt-4o
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: mem0
+      config:
+        api_key_env: MEM0_API_KEY
+        user_id: "life_test_{situation_id}"
+    notes: >
+      Cross-vendor baseline. Tests whether memory architecture matters
+      more than the underlying LLM.

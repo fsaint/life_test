@@ -1,0 +1,12 @@
+event_id: screenshot_001
+event_type: screenshot
+timestamp: "2026-03-15T16:00:00-06:00"
+
+payload:
+  source_description: "Screenshot of Gridline HR portal — offer letter confirmation page"
+  image_description: >
+    The page header reads "Gridline Technologies — HR Portal". Below it:
+    "Offer Letter Signed Successfully". Employee name: Alex Rivera.
+    New title: Senior Software Engineer. Effective date: March 15, 2026.
+    New annual salary: $128,000.00. Pay period: Semi-monthly ($5,333.33/paycheck).
+    A green checkmark and "Document saved to your records" message is visible.

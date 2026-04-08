@@ -1,0 +1,23 @@
+schema_version: "1.0"
+run_label: "initial_sweep"
+
+situations:
+  - level_1_alex
+  - level_4_marsh
+
+# Start with baselines only — add memory systems once baselines are established
+systems:
+  - claude_haiku_baseline
+  - claude_sonnet_baseline
+  - claude_haiku_mempalace
+  - claude_sonnet_mempalace
+  # - claude_sonnet_mem0    # uncomment when Mem0 key is configured
+  # - claude_sonnet_zep     # uncomment when Zep key is configured
+  # - gpt4o_mem0            # uncomment when OpenAI key is configured
+
+options:
+  reset_memory_between_situations: true  # isolated test per situation
+  question_timeout_seconds: 30
+  max_retries_on_llm_error: 2
+  reporters:
+    - json_reporter

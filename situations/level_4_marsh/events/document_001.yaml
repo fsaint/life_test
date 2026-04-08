@@ -1,0 +1,28 @@
+event_id: document_001
+event_type: document
+timestamp: "2026-03-09T11:00:00-06:00"
+
+payload:
+  document_type: "contractor_quote"
+  source: "Hector Ruiz — HR Contracting"
+  title: "Repair Quote — 208 Lenox Ave"
+  content: |
+    Date: March 9, 2026
+    Property: 208 Lenox Ave, Nashville TN 37203
+    Owner: Daniel Marsh
+    Prepared by: Hector Ruiz, HR Contracting, (615) 555-0729
+
+    SCOPE OF WORK:
+    1. Kitchen faucet replacement (under-sink leak) — $285 parts + $150 labor = $435
+    2. Pest control treatment (roaches, interior) — subcontracted to Ace Pest Control — $175
+
+    TOTAL ESTIMATE: $610
+
+    Proposed date: March 13, 2026 (Friday), 10am–2pm. Tenant Marcus Webb has been
+    notified and confirmed availability.
+
+    Note: If faucet supply lines show corrosion during inspection, additional cost may apply.
+    I'll call you immediately before proceeding with any additional work.
+
+    — Hector
+  file_format: "pdf_text_extracted"

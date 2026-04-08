@@ -1,0 +1,18 @@
+event_id: sms_001
+event_type: sms
+timestamp: "2026-03-05T11:22:00-06:00"
+
+payload:
+  thread:
+    - from: "Marcus Webb (+1-615-555-0581)"
+      to: "Daniel"
+      body: "Hey Daniel, kitchen faucet at Lenox is leaking bad under the sink. Been going 2 days now. Getting worse."
+    - from: "Daniel"
+      to: "Marcus"
+      body: "Thanks for letting me know Marcus. I'll get Hector over there this week. Put a bucket under it for now."
+    - from: "Marcus Webb (+1-615-555-0581)"
+      to: "Daniel"
+      body: "Ok will do. Also my lease says you handle pest control — saw a roach in the kitchen this morning."
+    - from: "Daniel"
+      to: "Marcus"
+      body: "Got it, I'll have pest control come same day as Hector if I can. I'll keep you posted."

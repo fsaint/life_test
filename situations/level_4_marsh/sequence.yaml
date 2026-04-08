@@ -1,0 +1,258 @@
+schema_version: "1.0"
+situation_id: "level_4_marsh"
+description: "Complex family. Tests multi-entity recall, relationship tracking, priority conflicts, and PA-level synthesis."
+total_possible_points: 165
+
+phases:
+
+  # ── Phase 1: baseline knowledge from initial_state ──────────────────────────
+  - phase_id: "p1_baseline_questions"
+    type: question_section
+    label: "Baseline recall — people, properties, businesses"
+    questions:
+
+      - question_id: "q1_01"
+        text: "Who is the tenant at the Lenox Ave rental property and what is the monthly rent?"
+        expected_answer: "Marcus Webb, $2,100/month"
+        difficulty: 1
+        points: 5
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Names Marcus Webb as the tenant"
+              points: 3
+            - criterion: "States monthly rent is $2,100"
+              points: 2
+
+      - question_id: "q1_02"
+        text: "What is Daniel's business partner's name and phone number?"
+        expected_answer: "Ray Kowalski, (615) 555-0839"
+        difficulty: 1
+        points: 5
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Names Ray Kowalski"
+              points: 3
+            - criterion: "Provides correct phone number (615) 555-0839"
+              points: 2
+
+      - question_id: "q1_03"
+        text: "What day of the week is off-limits for scheduling family dinners and why?"
+        expected_answer: "Tuesday — it's Daniel and Carla's date night"
+        difficulty: 2
+        points: 6
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Tuesday"
+              points: 4
+            - criterion: "Mentions it is date night for Daniel and Carla"
+              points: 2
+
+      - question_id: "q1_04"
+        text: "What sport does Sophie play and who is her coach?"
+        expected_answer: "Soccer. Coach Tina Holt, Green Wave team."
+        difficulty: 2
+        points: 6
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Identifies soccer as Sophie's sport"
+              points: 3
+            - criterion: "Names Coach Tina Holt"
+              points: 3
+
+      - question_id: "q1_05"
+        text: "Who handles repairs at the Lenox Ave rental property?"
+        expected_answer: "Hector Ruiz, (615) 555-0729"
+        difficulty: 1
+        points: 4
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Names Hector Ruiz"
+              points: 3
+            - criterion: "Provides phone number or contractor role"
+              points: 1
+
+  # ── Phase 2: rental + business events ───────────────────────────────────────
+  - phase_id: "p2_events"
+    type: event_section
+    label: "Tenant repair issue, business inventory decision, approval instruction"
+    events:
+      - ref: "events/sms_001.yaml"
+      - ref: "events/email_001.yaml"
+      - ref: "events/instruction_001.yaml"
+
+  - phase_id: "p2_questions"
+    type: question_section
+    label: "Rental issue and business decision recall"
+    questions:
+
+      - question_id: "q2_01"
+        text: "What repairs are needed at the Lenox Ave property according to Marcus Webb?"
+        expected_answer: "Leaking kitchen faucet (under sink, ongoing 2 days) and a roach pest control issue."
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Mentions the kitchen faucet leak"
+              points: 4
+            - criterion: "Mentions the roach/pest control issue"
+              points: 4
+
+      - question_id: "q2_02"
+        text: "What decision did Daniel make about the inventory order? What is the deadline to place it?"
+        expected_answer: "Daniel approved the pre-order with Hendricks Industrial to lock in pricing. Janet should place it before March 31."
+        difficulty: 2
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Daniel approved the order"
+              points: 3
+            - criterion: "Names Hendricks Industrial as the supplier"
+              points: 2
+            - criterion: "States March 31 as the deadline"
+              points: 3
+
+      - question_id: "q2_03"
+        text: "What approval threshold requires Daniel's sign-off at Marsh Plumbing Supply?"
+        expected_answer: "$10,000 — any purchase over that requires Daniel's sign-off per the operating agreement"
+        difficulty: 3
+        points: 7
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States $10,000 threshold"
+              points: 5
+            - criterion: "Mentions operating agreement as the source"
+              points: 2
+
+  # ── Phase 3: kids + health + follow-up events ───────────────────────────────
+  - phase_id: "p3_events"
+    type: event_section
+    label: "Owen's grade, Sophie's tournament, Hector's quote, medical + tax instructions"
+    events:
+      - ref: "events/email_002.yaml"
+      - ref: "events/sms_002.yaml"
+      - ref: "events/document_001.yaml"
+      - ref: "events/instruction_002.yaml"
+
+  - phase_id: "p3_questions"
+    type: question_section
+    label: "Multi-domain synthesis — family, property, health, finance"
+    questions:
+
+      - question_id: "q3_01"
+        text: "What is Owen's situation in AP Chemistry and what is scheduled because of it?"
+        expected_answer: "Owen got a 71 (C) on his mid-term, below the B- threshold for AP exam eligibility. A teacher conference with Mr. Brennan is scheduled Thursday March 12 at 3:30pm."
+        difficulty: 2
+        points: 10
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Owen's grade (71 or C)"
+              points: 3
+            - criterion: "Mentions it puts AP exam eligibility at risk"
+              points: 3
+            - criterion: "States the teacher conference date/time (March 12, 3:30pm)"
+              points: 4
+
+      - question_id: "q3_02"
+        text: "What is the total estimated cost for Hector's repairs at Lenox Ave and what does it cover?"
+        expected_answer: "$610 total — faucet replacement ($435) and pest control ($175). Scheduled March 13."
+        difficulty: 2
+        points: 10
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States total of $610"
+              points: 3
+            - criterion: "Mentions faucet replacement"
+              points: 2
+            - criterion: "Mentions pest control"
+              points: 2
+            - criterion: "States March 13 as the scheduled date"
+              points: 3
+
+      - question_id: "q3_03"
+        text: "What are all of Daniel's upcoming appointments or deadlines in the next 6 weeks?"
+        expected_answer: "March 12 — Owen's teacher conference (3:30pm). March 13 — Hector repairs Lenox Ave (10am-2pm). March 25 — Daniel's physical with Dr. Shah (9am). March 31 — Inventory order deadline (Hendricks Industrial). April 15 — Estimated tax payment ($18,500). April 18-19 — Sophie's soccer tournament in Murfreesboro."
+        difficulty: 5
+        points: 25
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "March 12: Owen's teacher conference"
+              points: 4
+            - criterion: "March 13: Hector repairs at Lenox Ave"
+              points: 4
+            - criterion: "March 25: Daniel's physical with Dr. Shah"
+              points: 4
+            - criterion: "March 31: inventory order deadline"
+              points: 4
+            - criterion: "April 15: estimated tax payment of $18,500"
+              points: 5
+            - criterion: "April 18-19: Sophie's soccer tournament"
+              points: 4
+
+      - question_id: "q3_04"
+        text: "Ray Kowalski wants to schedule a call on a Tuesday evening. What should the response be and why?"
+        expected_answer: "Tuesday evenings are reserved as date night for Daniel and Carla. Suggest an alternative time. For business calls, Daniel prefers before noon."
+        difficulty: 3
+        points: 10
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States Tuesday is not available (date night)"
+              points: 5
+            - criterion: "Suggests an alternative or notes Daniel prefers morning calls for business"
+              points: 5
+
+      - question_id: "q3_05"
+        text: "What is the total estimated savings from the Hendricks Industrial pre-order and who is responsible for placing it?"
+        expected_answer: "~$14,000 in savings. Janet Torres, the office manager, is placing the order."
+        difficulty: 3
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "States ~$14,000 in savings"
+              points: 4
+            - criterion: "Names Janet Torres as the person placing the order"
+              points: 4
+
+      - question_id: "q3_06"
+        text: "Carla texted about two things needing attention. What were they and what did Daniel agree to for each?"
+        expected_answer: "1) Owen's chemistry grade — Daniel will attend the teacher conference Thursday. 2) Sophie's soccer tournament April 18-19 in Murfreesboro — Daniel will drive Sophie."
+        difficulty: 4
+        points: 15
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Identifies Owen's grade as one topic"
+              points: 3
+            - criterion: "States Daniel will attend the teacher conference"
+              points: 3
+            - criterion: "Identifies Sophie's tournament as the other topic"
+              points: 3
+            - criterion: "States Daniel will drive Sophie to Murfreesboro April 18-19"
+              points: 3
+            - criterion: "Correctly attributes third item (Dr. Shah reminder) to Carla"
+              points: 3
+
+      - question_id: "q3_07"
+        text: "What is the condition under which Hector might charge more than the quoted amount, and what will he do before proceeding?"
+        expected_answer: "If the faucet supply lines show corrosion during inspection, the cost may increase. Hector will call Daniel before doing any extra work."
+        difficulty: 3
+        points: 8
+        scoring:
+          type: rubric
+          rubric_points:
+            - criterion: "Mentions possible corrosion on supply lines as the condition"
+              points: 4
+            - criterion: "States Hector will call Daniel before proceeding with additional work"
+              points: 4

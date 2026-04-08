@@ -1,0 +1,15 @@
+event_id: sms_002
+event_type: sms
+timestamp: "2026-03-08T17:45:00-06:00"
+
+payload:
+  thread:
+    - from: "Carla (+1-615-555-0317)"
+      to: "Daniel"
+      body: "Did you see Owen's chem grade? We need to talk tonight. Also Sophie's soccer tournament is April 18-19, away game in Murfreesboro. Can you handle it?"
+    - from: "Daniel"
+      to: "Carla"
+      body: "Yes saw it. I'll be at the teacher meeting Thursday. April 18-19 is in my calendar — I'll drive Sophie."
+    - from: "Carla (+1-615-555-0317)"
+      to: "Daniel"
+      body: "Thank you. Also Dr. Shah's office called, your annual physical is overdue. She wants to see you before April."

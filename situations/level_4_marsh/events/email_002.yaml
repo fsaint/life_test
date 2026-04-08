@@ -1,0 +1,23 @@
+event_id: email_002
+event_type: email
+timestamp: "2026-03-07T14:15:00-06:00"
+
+payload:
+  from: "brentwood.academy@brentwoodacademy.edu"
+  to: "daniel.marsh@gmail.com"
+  subject: "Owen Marsh — AP Chemistry mid-term grade"
+  body: |
+    Dear Mr. and Mrs. Marsh,
+
+    This is an automated notice from Brentwood Academy's academic portal.
+
+    Owen Marsh's mid-term grade in AP Chemistry has been posted:
+    Grade: 71 (C)
+
+    This is below the B- threshold required to maintain eligibility for the
+    AP exam in May. A student-teacher conference with Mr. Brennan has been
+    scheduled for Thursday March 12 at 3:30pm.
+
+    Please log in to the parent portal to acknowledge this notice.
+
+    Brentwood Academy Academic Office
