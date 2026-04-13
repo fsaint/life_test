@@ -80,6 +80,81 @@ systems:
       Haiku + MemPalace — tests whether the memory system compensates
       for a weaker LLM. Lower cost than Sonnet variant.
 
+  # Vanilla RAG: local sentence-transformers embeddings, in-memory cosine search
+  - system_id: claude_haiku_rag
+    label: "Claude Haiku 4.5 — vanilla RAG (local embeddings)"
+    adapter: claude_rag
+    llm:
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: vanilla_rag
+      config:
+        embed_model: all-MiniLM-L6-v2  # sentence-transformers model
+    notes: >
+      Pure RAG baseline: text is chunked and embedded locally with
+      sentence-transformers. At query time, top-k chunks by cosine similarity
+      are injected into the prompt. Zero ingest tokens, no external services.
+
+  - system_id: claude_sonnet_rag
+    label: "Claude Sonnet 4.6 — vanilla RAG (local embeddings)"
+    adapter: claude_rag
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: vanilla_rag
+      config:
+        embed_model: all-MiniLM-L6-v2
+    notes: >
+      Sonnet variant of the vanilla RAG baseline. Tests whether a stronger
+      LLM improves results when the retrieval layer is identical.
+
+  # Graph Storage: SQLite knowledge graph with LLM extraction
+  - system_id: claude_haiku_graph
+    label: "Claude Haiku 4.5 — graph_storage (knowledge graph)"
+    adapter: claude_graph
+    llm:
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: graph_storage
+      config:
+        extract_model: claude-haiku-4-5-20251001  # model used for entity/fact extraction
+        n_context_items: 30   # increased from 20 — wider retrieval net
+        semantic_threshold: 0.25  # lowered from 0.35 — fewer false negatives
+    notes: >
+      graph_storage builds a SQLite knowledge graph by extracting entities,
+      facts, and relationships from each event using Haiku. At query time,
+      enrich_prompt() retrieves relevant graph context via name matching and
+      semantic search. Aggregation queries additionally run sub-query sweeps.
+
+  - system_id: claude_sonnet_graph
+    label: "Claude Sonnet 4.6 — graph_storage (knowledge graph)"
+    adapter: claude_graph
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 2048
+    memory:
+      provider: graph_storage
+      config:
+        extract_model: claude-sonnet-4-6  # upgraded from Haiku — better extraction quality
+        n_context_items: 40   # increased from 20 — critical for aggregation queries
+        semantic_threshold: 0.20  # lowered from 0.35 — cast wider net
+    notes: >
+      Sonnet reasoning + Sonnet extraction over graph_storage context. Upgrading
+      the extraction model reduces fact loss at ingest. Higher n_context_items
+      and lower semantic threshold improve recall for aggregation queries.
+      Multi-query sub-searches run automatically for broad questions.
+
   # Claude + Mem0 (managed memory SaaS)
   - system_id: claude_sonnet_mem0
     label: "Claude Sonnet 4.6 + Mem0"
