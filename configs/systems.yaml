@@ -155,6 +155,47 @@ systems:
       and lower semantic threshold improve recall for aggregation queries.
       Multi-query sub-searches run automatically for broad questions.
 
+  # LightRAG: knowledge graph + vector hybrid (https://github.com/hkuds/lightrag)
+  - system_id: claude_haiku_lightrag
+    label: "Claude Haiku 4.5 — LightRAG (graph + vector hybrid)"
+    adapter: claude_lightrag
+    llm:
+      provider: anthropic
+      model: claude-haiku-4-5-20251001
+      temperature: 0.0
+      max_tokens: 8192  # needed for entity/relationship extraction JSON
+    memory:
+      provider: lightrag
+      config:
+        embed_model: all-MiniLM-L6-v2  # local, no Voyage API key required
+        query_mode: hybrid              # combines local graph + global graph search
+        top_k: 20
+    notes: >
+      LightRAG builds a knowledge graph from inserted text using the LLM for
+      entity/relationship extraction, then stores both the graph (NetworkX) and
+      dense vectors (NanoVectorDB). At query time, hybrid mode combines local
+      (entity-anchored) and global (community-level) graph traversal. Lower cost
+      model for both extraction and answering.
+
+  - system_id: claude_sonnet_lightrag
+    label: "Claude Sonnet 4.6 — LightRAG (graph + vector hybrid)"
+    adapter: claude_lightrag
+    llm:
+      provider: anthropic
+      model: claude-sonnet-4-6
+      temperature: 0.0
+      max_tokens: 8192
+    memory:
+      provider: lightrag
+      config:
+        embed_model: all-MiniLM-L6-v2
+        query_mode: hybrid
+        top_k: 20
+    notes: >
+      Sonnet variant of LightRAG. Higher quality extraction and answering at
+      increased cost. Sonnet handles both the graph construction LLM calls and
+      the final query response.
+
   # Claude + Mem0 (managed memory SaaS)
   - system_id: claude_sonnet_mem0
     label: "Claude Sonnet 4.6 + Mem0"

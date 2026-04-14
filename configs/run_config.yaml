@@ -4,6 +4,7 @@ run_label: "initial_sweep"
 situations:
   - level_1_alex
   - level_4_marsh
+  - level_5_sandra
 
 # Start with baselines only — add memory systems once baselines are established
 systems:
@@ -11,6 +12,12 @@ systems:
   - claude_sonnet_baseline
   - claude_haiku_mempalace
   - claude_sonnet_mempalace
+  - claude_haiku_rag
+  - claude_sonnet_rag
+  - claude_haiku_graph
+  - claude_sonnet_graph
+  - claude_haiku_lightrag
+  - claude_sonnet_lightrag
   # - claude_sonnet_mem0    # uncomment when Mem0 key is configured
   # - claude_sonnet_zep     # uncomment when Zep key is configured
   # - gpt4o_mem0            # uncomment when OpenAI key is configured
@@ -21,3 +28,4 @@ options:
   max_retries_on_llm_error: 2
   reporters:
     - json_reporter
+    - html_reporter

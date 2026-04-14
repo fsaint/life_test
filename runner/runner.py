@@ -73,6 +73,7 @@ def parse_question(q: dict) -> Question:
         difficulty=q["difficulty"],
         points=q["points"],
         scoring=scoring,
+        question_type=q.get("question_type", "factual"),
     )
 
 
@@ -86,6 +87,15 @@ def load_adapter(system_config: dict) -> BaseAdapter:
     if adapter_name == "claude_mempalace":
         from runner.adapters.claude_mempalace import ClaudeMemPalaceAdapter
         return ClaudeMemPalaceAdapter(system_config)
+    if adapter_name == "claude_rag":
+        from runner.adapters.claude_rag import ClaudeRagAdapter
+        return ClaudeRagAdapter(system_config)
+    if adapter_name == "claude_graph":
+        from runner.adapters.claude_graph import ClaudeGraphAdapter
+        return ClaudeGraphAdapter(system_config)
+    if adapter_name == "claude_lightrag":
+        from runner.adapters.claude_lightrag import ClaudeLightRagAdapter
+        return ClaudeLightRagAdapter(system_config)
     raise NotImplementedError(f"Adapter '{adapter_name}' not yet implemented. "
                               f"See runner/adapters/base.py to implement it.")
 
@@ -94,10 +104,11 @@ def load_adapter(system_config: dict) -> BaseAdapter:
 
 class LifeTestRunner:
 
-    def __init__(self, run_config: dict, systems_config: dict, results_dir: Path):
+    def __init__(self, run_config: dict, systems_config: dict, results_dir: Path, recover: bool = False):
         self.run_config = run_config
         self.systems_config = {s["system_id"]: s for s in systems_config["systems"]}
         self.results_dir = results_dir
+        self.recover = recover
         self.results_dir.mkdir(parents=True, exist_ok=True)
 
     def run_all(self) -> list[SituationResult]:
@@ -112,6 +123,14 @@ class LifeTestRunner:
         print(f"\n{'='*60}")
         print(f"  Situation: {situation_id}  |  System: {system_id}")
         print(f"{'='*60}")
+
+        # Recovery: skip fully-completed pairs
+        if self.recover:
+            completed = self._load_completed_result(situation_id, system_id)
+            if completed is not None:
+                print(f"  [recover] Already complete — skipping. "
+                      f"({completed.total_earned}/{completed.total_possible})")
+                return completed
 
         situation = load_situation(situation_id)
         sys_config = self.systems_config[system_id]
@@ -130,12 +149,23 @@ class LifeTestRunner:
             total_possible=situation["sequence"]["total_possible_points"],
         )
 
+        # Recovery: load partial question-level progress
+        cached_scores: dict[str, QuestionScore] = {}
+        progress_path = self._result_path(situation_id, system_id) / "progress.jsonl"
+        if self.recover:
+            cached_scores = self._load_progress(progress_path)
+            if cached_scores:
+                print(f"  [recover] Resuming — {len(cached_scores)} question(s) already scored.")
+
         ingestion_log_path = self._result_path(situation_id, system_id) / "ingestion_log.jsonl"
         ingestion_log_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(ingestion_log_path, "w") as log_f:
+        log_mode = "a" if self.recover else "w"
+        with open(ingestion_log_path, log_mode) as log_f:
             for phase in situation["sequence"]["phases"]:
-                phase_result = self._run_phase(phase, situation, adapter, log_f)
+                phase_result = self._run_phase(
+                    phase, situation, adapter, log_f, cached_scores, progress_path
+                )
                 result.phases.append(phase_result)
                 result.total_earned += sum(s.earned for s in phase_result.scores)
 
@@ -143,7 +173,15 @@ class LifeTestRunner:
         print(f"\n  Score: {result.total_earned}/{result.total_possible} ({result.percent}%)")
         return result
 
-    def _run_phase(self, phase: dict, situation: dict, adapter: BaseAdapter, log_f) -> PhaseResult:
+    def _run_phase(
+        self,
+        phase: dict,
+        situation: dict,
+        adapter: BaseAdapter,
+        log_f,
+        cached_scores: dict[str, QuestionScore],
+        progress_path: Path,
+    ) -> PhaseResult:
         phase_result = PhaseResult(phase_id=phase["phase_id"], phase_type=phase["type"])
         label = phase.get("label", phase["phase_id"])
 
@@ -159,20 +197,109 @@ class LifeTestRunner:
 
         elif phase["type"] == "question_section":
             print(f"\n  [questions] {label}")
-            timeout = self.run_config.get("options", {}).get("question_timeout_seconds", 30)
             for q_raw in phase["questions"]:
                 question = parse_question(q_raw)
                 print(f"    Q {question.question_id} (difficulty={question.difficulty}, {question.points}pts)...", end=" ", flush=True)
-                raw_answer = adapter.ask(question.text)
-                score = Scorer.score(question, raw_answer)
+
+                if question.question_id in cached_scores:
+                    # Replay through adapter to maintain conversation state, use cached score
+                    adapter.ask(question.text)
+                    score = cached_scores[question.question_id]
+                    status = "PASS" if score.passed else "FAIL"
+                    print(f"{score.earned}/{score.possible} [{status}] (cached)")
+                else:
+                    raw_answer, tokens_used = adapter.ask(question.text)
+                    score = Scorer.score(question, raw_answer)
+                    score.tokens_used = tokens_used
+                    status = "PASS" if score.passed else "FAIL"
+                    print(f"{score.earned}/{score.possible} [{status}] ({tokens_used} tok)")
+                    self._append_progress(progress_path, score)
+
                 phase_result.scores.append(score)
-                status = "PASS" if score.passed else "FAIL"
-                print(f"{score.earned}/{score.possible} [{status}]")
 
         return phase_result
 
+    # ── Progress / recovery helpers ─────────────────────────────────────────────
+
     def _result_path(self, situation_id: str, system_id: str) -> Path:
         return self.results_dir / f"{situation_id}__{system_id}"
+
+    @staticmethod
+    def _append_progress(progress_path: Path, score: QuestionScore) -> None:
+        progress_path.parent.mkdir(parents=True, exist_ok=True)
+        entry = {
+            "question_id": score.question_id,
+            "text": score.text,
+            "difficulty": score.difficulty,
+            "question_type": score.question_type,
+            "possible": score.possible,
+            "earned": score.earned,
+            "passed": score.passed,
+            "tokens_used": score.tokens_used,
+            "expected_answer": score.expected_answer,
+            "raw_answer": score.raw_answer,
+            "breakdown": score.breakdown,
+        }
+        with open(progress_path, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+
+    @staticmethod
+    def _load_progress(progress_path: Path) -> dict[str, QuestionScore]:
+        if not progress_path.exists():
+            return {}
+        scores: dict[str, QuestionScore] = {}
+        with open(progress_path) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                d = json.loads(line)
+                score = QuestionScore(
+                    question_id=d["question_id"],
+                    text=d["text"],
+                    difficulty=d["difficulty"],
+                    possible=d["possible"],
+                    earned=d["earned"],
+                    raw_answer=d["raw_answer"],
+                    expected_answer=d["expected_answer"],
+                    passed=d["passed"],
+                    tokens_used=d.get("tokens_used", 0),
+                    breakdown=d.get("breakdown"),
+                    question_type=d.get("question_type", "factual"),
+                )
+                scores[score.question_id] = score
+        return scores
+
+    def _load_completed_result(self, situation_id: str, system_id: str) -> SituationResult | None:
+        path = self._result_path(situation_id, system_id) / "scores.json"
+        if not path.exists():
+            return None
+        with open(path) as f:
+            data = json.load(f)
+        result = SituationResult(
+            situation_id=data["situation_id"],
+            system_id=data["system_id"],
+            total_possible=data["total_possible"],
+        )
+        result.total_earned = data["total_earned"]
+        for phase_data in data.get("phases", []):
+            phase_result = PhaseResult(phase_id=phase_data["phase_id"], phase_type="question_section")
+            for q in phase_data.get("questions", []):
+                phase_result.scores.append(QuestionScore(
+                    question_id=q["question_id"],
+                    text=q["text"],
+                    difficulty=q["difficulty"],
+                    possible=q["possible"],
+                    earned=q["earned"],
+                    raw_answer=q["raw_answer"],
+                    expected_answer=q["expected_answer"],
+                    passed=q["passed"],
+                    tokens_used=q.get("tokens_used", 0),
+                    breakdown=q.get("breakdown"),
+                    question_type=q.get("question_type", "factual"),
+                ))
+            result.phases.append(phase_result)
+        return result
 
     def _save_scores(self, result: SituationResult) -> None:
         path = self._result_path(result.situation_id, result.system_id) / "scores.json"
@@ -193,9 +320,12 @@ class LifeTestRunner:
                             "question_id": s.question_id,
                             "text": s.text,
                             "difficulty": s.difficulty,
+                            "question_type": s.question_type,
                             "possible": s.possible,
                             "earned": s.earned,
                             "passed": s.passed,
+                            "tokens_used": s.tokens_used,
+                            "expected_answer": s.expected_answer,
                             "raw_answer": s.raw_answer,
                             "breakdown": s.breakdown,
                         }
@@ -217,6 +347,8 @@ def main():
     parser.add_argument("--config", default="configs/run_config.yaml")
     parser.add_argument("--situation", help="Override: run a single situation")
     parser.add_argument("--system", help="Override: run a single system")
+    parser.add_argument("--recover", metavar="RUN_ID",
+                        help="Resume a previously interrupted run (e.g. run_20260409_143021)")
     args = parser.parse_args()
 
     run_config = load_yaml(args.config)
@@ -227,11 +359,27 @@ def main():
     if args.system:
         run_config["systems"] = [args.system]
 
-    run_id = datetime.now(timezone.utc).strftime("run_%Y%m%d_%H%M%S")
-    results_dir = Path("results") / run_id
-    print(f"Run ID: {run_id}")
+    if args.recover:
+        run_id = args.recover
+        results_dir = Path("results") / run_id
+        if not results_dir.exists():
+            raise SystemExit(f"ERROR: results dir not found: {results_dir}")
+        # Load original run's situations/systems from manifest if present
+        manifest_path = results_dir / "run_manifest.json"
+        if manifest_path.exists():
+            with open(manifest_path) as f:
+                manifest = json.load(f)
+            if not args.situation:
+                run_config["situations"] = manifest["situations"]
+            if not args.system:
+                run_config["systems"] = manifest["systems"]
+        print(f"Recovering run: {run_id}")
+    else:
+        run_id = datetime.now(timezone.utc).strftime("run_%Y%m%d_%H%M%S")
+        results_dir = Path("results") / run_id
+        print(f"Run ID: {run_id}")
 
-    runner = LifeTestRunner(run_config, systems_config, results_dir)
+    runner = LifeTestRunner(run_config, systems_config, results_dir, recover=bool(args.recover))
     results = runner.run_all()
 
     # Write run manifest
@@ -251,6 +399,12 @@ def main():
     }
     with open(results_dir / "run_manifest.json", "w") as f:
         json.dump(manifest, f, indent=2)
+
+    reporters = run_config.get("options", {}).get("reporters", [])
+    if "html_reporter" in reporters:
+        from runner.report import generate as generate_html
+        report_path = generate_html(results_dir)
+        print(f"HTML report:    {report_path}")
 
     print(f"\nResults written to: {results_dir}/")
 

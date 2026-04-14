@@ -3,9 +3,16 @@ pyyaml>=6.0
 python-dotenv>=1.0.0
 mempalace>=2.0.0      # MemPalace adapter (ChromaDB + semantic search)
 
-# Optional: local embeddings for the exact_or_semantic scoring strategy
-# Falls back to word-overlap ratio if not installed
-# sentence-transformers>=2.7.0
+# Vanilla RAG adapter + semantic scoring
+sentence-transformers>=2.7.0
+numpy>=1.24.0
+
+# Graph Storage adapter (SQLite knowledge graph)
+# Install from source: pip install git+https://github.com/fsaint/graph_storage.git
+graph-storage @ git+https://github.com/fsaint/graph_storage.git
+
+# LightRAG adapter (knowledge graph + vector hybrid)
+lightrag-hku>=1.3.0
 
 # Optional: additional memory system adapters
 # openai>=1.0.0
